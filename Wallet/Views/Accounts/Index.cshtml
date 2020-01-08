@@ -1,0 +1,358 @@
+﻿@using WalletServices.Entities
+@model IEnumerable<WalletServices.Entities.Account>
+
+@{
+	ViewData["Title"] = "Index";
+}
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+	<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+		function showHideElms(elmName) {
+			$(elmName).toggle();
+		}
+
+	</script>
+</head>
+
+<body>
+    @if (Model.Any(m => m.Expenses.Any()) && Model.Any(m => m.Incomes.Any()))
+    {
+        <script type="text/javascript">
+			window.onload = function () {
+					var chart = new CanvasJS.Chart("chartContainer", {
+					title: {
+						text: "Accounts statistics | Incomes"
+					},
+					animationEnabled: true,
+					legend: {
+						fontSize: 20,
+						fontFamily: "Helvetica"
+					},
+					theme: "light2",
+					data: [
+						{
+							type: "doughnut",
+							indexLabelFontFamily: "Garamond",
+							indexLabelFontSize: 20,
+							indexLabel: "{label} {y}%",
+							startAngle: -20,
+							toolTipContent: "{label} {y}%",
+							dataPoints: @Html.Raw(Json.Serialize(ViewBag.Incomes)),
+						}
+					]
+				});
+
+				chart.render();
+
+				var chartExp = new CanvasJS.Chart("chartContainerExp", {
+					title: {
+						text: "Accounts statistics | Expenses"
+					},
+					animationEnabled: true,
+					legend: {
+						fontSize: 20,
+						fontFamily: "Helvetica"
+					},
+					theme: "light2",
+					data: [
+						{
+							type: "doughnut",
+							indexLabelFontFamily: "Garamond",
+							indexLabelFontSize: 20,
+							indexLabel: "{label} {y}%",
+							startAngle: -20,
+							toolTipContent: "{label} {y}%",
+							dataPoints: @Html.Raw(Json.Serialize(ViewBag.Expenses)),
+						}
+					]
+				});
+
+				chartExp.render();
+			};
+        </script>
+
+        <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+        <div id="chartContainerExp" style="height: 370px;"></div>
+    }
+
+    <p style="text-align: center; color: white;">
+        <a class="btn btn-success" onclick="showHideElms('.income_add')">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add income
+        </a>
+        <a class="btn btn-success" onclick="showHideElms('.expense_add')">
+            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> Add expense
+        </a>
+        <a class="btn btn-success" onclick="showHideElms('.account_transfer')">
+            <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> Add account transfer
+        </a>
+    </p>
+
+
+    <form asp-action="Index" method="get">
+        <div class="form-inline no-color">
+            Choose account: <br>
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="SearchString" value="@ViewData["currentFilter"]">
+            <br><button class="btn btn-outline-success my-2 my-sm-0" type="submit" value="Search">Search</button>
+            <a asp-action="Index">Back to Full List</a>
+            <br>
+        </div>
+    </form>
+    
+
+    <div class="income_add" style="display:none">
+        @using (Html.BeginForm("Create", "IncomeApi", FormMethod.Post))
+        {
+            <div class="row">
+                <div class="col-md-4">
+                    <form>
+                        <div class="form-group">
+                            <label>Income type</label>
+                            <select class="custom-select" id="incomeType" name="incomeType">
+                                @foreach (var incomeType in Enum.GetNames(typeof(IncomeTypeName)))
+                                {
+                                    <option value="@incomeType">@incomeType</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Account</label>
+                            <select class="custom-select" id="accountId" name="accountId">
+                                @foreach (var account in Model)
+                                {
+                                    <option value="@account.Id">@account.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sum</label>
+                            <input type="number" name="sum" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Comment</label>
+                            <input type="text" name="comment" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Create" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="expense_add" style="display:none">
+        @using (Html.BeginForm("Create", "ExpenseApi", FormMethod.Post))
+        {
+            <div class="row">
+                <div class="col-md-4">
+                    <form>
+                        <div class="form-group">
+                            <label>Income type</label>
+                            <select class="custom-select" name="expenseType">
+                                @foreach (var incomeType in Enum.GetNames(typeof(ExpenseTypeName)))
+                                {
+                                    <option value="@incomeType">@incomeType</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Account</label>
+                            <select class="custom-select" name="accountId">
+                                @foreach (var account in Model)
+                                {
+                                    <option value="@account.Id">@account.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sum</label>
+                            <input type="number" name="sum" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Comment</label>
+                            <input type="text" name="comment" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Create" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="account_transfer" style="display:none">
+        @using (Html.BeginForm("Create", "AccountTransferApi", FormMethod.Post))
+        {
+            <div class="row">
+                <div class="col-md-4">
+                    <form>
+                        <div class="form-group">
+                            <label>Income type</label>
+                            <select class="custom-select" name="senderId">
+                                @foreach (var account in Model)
+                                {
+                                    <option value="@account.Id">@account.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Account</label>
+                            <select class="custom-select" name="recieverId">
+                                @foreach (var account in Model)
+                                {
+                                    <option value="@account.Id">@account.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sum</label>
+                            <input type="number" name="sum" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Comment</label>
+                            <input type="text" name="comment" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Create" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Sum)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Sum)
+                    </td>
+                    <td>
+                        @using (Html.BeginForm("Delete", "AccountApi", FormMethod.Post))
+                        {
+                            <form>
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="submit" class="btn btn-danger" value="Delete" />
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a class="btn btn-success" onclick="showHideElms('.account_add')" style="color: white;">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Add account
+    </a>
+
+    <div class="account_add" style="display:none">
+        @using (Html.BeginForm("Create", "AccountApi", FormMethod.Post))
+        {
+            <div class="row">
+                <div class="col-md-4">
+                    <form>
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" name="name" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Sum</label>
+                            <input type="number" name="sum" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Create" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    @foreach (var item in Model)
+    {
+        <h3>@item.Name</h3>
+        <table class="table table-striped">
+            <thead style="background-color:#343a40">
+                <tr style="color:white">
+                    <td>
+                        Type
+                    </td>
+                    <td>
+                        Comment
+                    </td>
+                    <td>
+                        Created At
+                    </td>
+                    <td>
+                        Sum
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="4" style="background-color:lightgrey">Incomes</td>
+                </tr>
+                @foreach (var income in item.Incomes)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => income.IncomeType)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => income.Comment)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => income.CreatedAt)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => income.Sum)
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td colspan="4" style="background-color:lightgrey">Expenses</td>
+                </tr>
+                @foreach (var expense in item.Expenses)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => expense.ExpenseType)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => expense.Comment)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => expense.CreatedAt)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => expense.Sum)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <div style="padding-bottom: 50px"></div>
+</body>

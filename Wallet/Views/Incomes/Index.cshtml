@@ -1,0 +1,60 @@
+﻿@model IEnumerable<WalletServices.Entities.Income>
+@using WalletServices.Entities
+
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Find:
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="SearchString" value="@ViewData["currentFilter"]">
+            <br><label>Income type:</label>
+            <select class="custom-select" id="incomeType" name="incomeType" value="@ViewData["currentFilterType"]">
+                @foreach (var incomeType in Enum.GetNames(typeof(IncomeTypeName)))
+                {
+                    <option value="@incomeType">@incomeType</option>
+                }
+            </select><br />
+            <br><button class="btn btn-outline-success my-2 my-sm-0" type="submit" value="Search">Search</button>
+            <a asp-action="Index">Back to Full List</a>
+        </p>
+    </div>
+</form>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.IncomeType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Comment)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedAt)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Sum)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IncomeType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Comment)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Sum)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
